@@ -21,6 +21,7 @@ class StockBase:
     """The base class for other stock classes
     """
 
+    csv_header = ''
     format = ''
 
     def to_csv(self):
@@ -41,6 +42,9 @@ class GenericStock(StockBase):
     format not because it is more complete but it was the first one that the
     author of this library has dealt with.
     """
+
+    csv_header = 'filename,title,description,category,keywords,country,' \
+                 'poster_timecode,releases,editorial'
 
     categories = [
         'Abstract',
@@ -134,6 +138,8 @@ class GenericStock(StockBase):
             self.from_shutter_stock(other_stock)
         elif isinstance(other_stock, AdobeStock):
             self.from_adobe_stock(other_stock)
+        elif isinstance(other_stock, GettyImages):
+            self.from_getty_images(other_stock)
 
     def from_shutter_stock(self, shutter_stock):
         """reads data from ShutterStock
@@ -146,7 +152,7 @@ class GenericStock(StockBase):
         self.keywords = shutter_stock.keywords
 
     def to_shutter_stock(self):
-        """converts the data to ShutterStock CSV format
+        """converts the data to ShutterStock
         """
         return ShutterStock(
             filename=self.filename,
@@ -176,14 +182,30 @@ class GenericStock(StockBase):
             filename=self.filename,
             title=self.title,
             keywords=self.keywords,
-            category=self.to_adobe_stock_categories[self.category1],
+            category=self.to_adobe_stock_categories[self.category1]
+            if self.category1 != '' else '',
             releases=self.releases
         )
 
-    def to_getty_images(self):
-        """converts the data to GettyImages CSV format
+    def from_getty_images(self, getty_images):
+        """Fills data from the given AdobeStock instance
+
+        :param GettyImages getty_images: GettyImages instance
+        :return:
         """
-        raise NotImplementedError()
+        self.filename = getty_images.filename
+        self.title = getty_images.title
+        self.keywords = getty_images.keywords
+
+    def to_getty_images(self):
+        """converts the data to GettyImages instancce
+        """
+        return GettyImages(
+            filename=self.filename,
+            title=self.title,
+            description=self.title,
+            keywords=self.keywords
+        )
 
     def to_csv(self):
         """converts data to CSV format
@@ -199,6 +221,8 @@ class GenericStock(StockBase):
 class ShutterStock(StockBase):
     """Data structure for ShutterStock
     """
+
+    csv_header = 'filename,title,keywords,category,editorial'
 
     format = '{filename},"{title}","{keywords}","{category1},{category2}",' \
              '{editorial}'
@@ -245,6 +269,7 @@ class AdobeStock(StockBase):
     """Data structure for AdobeStock
     """
 
+    csv_header = 'filename,title,keywords,category,releases'
     format = '{filename},{title},"{keywords}",{category},""'
 
     category_dict = {
@@ -304,6 +329,13 @@ class AdobeStock(StockBase):
         gst.from_(self)
         return gst.to_shutter_stock()
 
+    def to_getty_images(self):
+        """returns a GettyImages object
+        """
+        gst = GenericStock()
+        gst.from_(self)
+        return gst.to_getty_images()
+
     def from_file(self):
         """reads from file
         """
@@ -314,19 +346,22 @@ class GettyImages(StockBase):
     """Data structure for GettyImages
     """
 
-    format_header = 'file name,description,country,title,keywords,poster ' \
-                    'timecode'
+    csv_header = 'file name,description,country,title,keywords,poster ' \
+                 'timecode'
 
-    format = '{filename},{description},{country},{title},"{keywords}",' \
-             'poster_timecode'
+    format = '{filename},"{description}",{country},"{title}","{keywords}",' \
+             '{poster_timecode}'
 
-    def __init__(self):
-        self.filename = ''
-        self.description = ''
-        self.country = ''
-        self.title = ''
-        self.keywords = []
-        self.poster_timecode = '00:00:00'
+    def __init__(self, filename='', title='', description='', country='',
+                 keywords=None, poster_timecode='00:00:00:00'):
+        if keywords is None:
+            keywords = []
+        self.filename = filename
+        self.title = title
+        self.description = description
+        self.country = country
+        self.keywords = keywords
+        self.poster_timecode = poster_timecode
 
     def to_csv(self):
         """returns the data in CSV format
@@ -340,15 +375,21 @@ class GettyImages(StockBase):
             poster_timecode=self.poster_timecode
         )
 
-    def to_adobe_stock(self, adobe_stock):
+    def to_adobe_stock(self):
         """Returns a AdobeStock object
-
-        :param AdobeStock adobe_stock: AdobeStock instance
         :return:
         """
         gst = GenericStock()
         gst.from_(self)
         return gst.to_adobe_stock()
+
+    def to_shutter_stock(self):
+        """Returns a ShutterStock object
+        :return:
+        """
+        gst = GenericStock()
+        gst.from_(self)
+        return gst.to_shutter_stock()
 
     def from_file(self):
         """reads from file

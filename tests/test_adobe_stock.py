@@ -60,8 +60,6 @@ def test_data_structure():
 def test_initialization_with_keywords():
     """test some simple data
     """
-    from stocker.models import AdobeStock
-
     # test data
     kwargs = {
         'filename': 'footage_filename.mov',
@@ -79,6 +77,7 @@ def test_initialization_with_keywords():
         ],
         'releases': ['release1.pdf', 'release2.pdf']
     }
+    from stocker.models import AdobeStock
     ast = AdobeStock(**kwargs)
 
     assert ast.filename == kwargs['filename']
@@ -91,8 +90,6 @@ def test_initialization_with_keywords():
 def test_to_csv():
     """tests to_csv method
     """
-    from stocker.models import AdobeStock
-
     # test data
     kwargs = {
         'filename': 'footage_filename.mov',
@@ -110,6 +107,7 @@ def test_to_csv():
         ],
         'releases': ['release1.pdf', 'release2.pdf']
     }
+    from stocker.models import AdobeStock
     ast = AdobeStock(**kwargs)
 
     assert ast.to_csv() == 'footage_filename.mov,"Up to 200 characters,Most ' \
@@ -121,8 +119,6 @@ def test_to_csv():
 def test_to_shutter_stock():
     """Testing conversion to ShutterStock format
     """
-    from stocker.models import AdobeStock
-
     # test data
     kwargs = {
         'filename': 'footage_filename.mov',
@@ -140,6 +136,7 @@ def test_to_shutter_stock():
         ],
         'releases': ['release1.pdf', 'release2.pdf']
     }
+    from stocker.models import AdobeStock
     ast = AdobeStock(**kwargs)
     sst = ast.to_shutter_stock()
     from stocker.models import ShutterStock
@@ -149,8 +146,6 @@ def test_to_shutter_stock():
 def test_to_shutter_stock_data_integrity():
     """Testing conversion to ShutterStock format, data integrity
     """
-    from stocker.models import AdobeStock
-
     # test data
     kwargs = {
         'filename': 'footage_filename.mov',
@@ -168,6 +163,7 @@ def test_to_shutter_stock_data_integrity():
         ],
         'releases': ['release1.pdf', 'release2.pdf']
     }
+    from stocker.models import AdobeStock
     ast = AdobeStock(**kwargs)
     sst = ast.to_shutter_stock()
     from stocker.models import ShutterStock
@@ -179,3 +175,62 @@ def test_to_shutter_stock_data_integrity():
     assert sst.category2 == ''
     assert sst.editorial is False
     assert sst.keywords == ast.keywords
+
+
+def test_to_getty_images():
+    """testing conversion to GettImages format
+    """
+    # test data
+    kwargs = {
+        'filename': 'footage_filename.mov',
+        'title': 'Up to 200 characters,Most important keywords first. '
+                 'Max 50 keywords.',
+        'category': 'Graphic Resources',
+        'keywords': [
+            'background',
+            'bay',
+            'behind',
+            'blue',
+            'boat',
+            'city',
+            'cloud',
+        ],
+        'releases': ['release1.pdf', 'release2.pdf']
+    }
+    from stocker.models import AdobeStock
+    ast = AdobeStock(**kwargs)
+
+    gti = ast.to_getty_images()
+    from stocker.models import GettyImages
+    assert isinstance(gti, GettyImages)
+
+
+def test_to_getty_images_data_integrity():
+    """Testing conversion to GettyImages format, data integrity
+    """
+    # test data
+    kwargs = {
+        'filename': 'footage_filename.mov',
+        'title': 'Up to 200 characters,Most important keywords first. '
+                 'Max 50 keywords.',
+        'category': 'Graphic Resources',
+        'keywords': [
+            'background',
+            'bay',
+            'behind',
+            'blue',
+            'boat',
+            'city',
+            'cloud',
+        ],
+        'releases': ['release1.pdf', 'release2.pdf']
+    }
+    from stocker.models import AdobeStock
+    ast = AdobeStock(**kwargs)
+    gti = ast.to_getty_images()
+    from stocker.models import GettyImages
+    assert isinstance(gti, GettyImages)
+
+    assert gti.filename == ast.filename
+    assert gti.title == ast.title
+    assert gti.keywords == ast.keywords
