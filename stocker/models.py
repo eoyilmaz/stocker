@@ -17,6 +17,59 @@
 # along with Stocker.  If not, see <http://www.gnu.org/licenses/>
 
 
+class Status:
+    """Stock status
+    """
+
+    statuses = ['Pending', 'Accepted', 'Rejected']
+
+
+class StockManager:
+    """This is a helper class that generates CSV files from TXT files in
+    different format.
+
+    Does several things mostly related to file system.
+    """
+
+    def __init__(self):
+        self.media = []
+
+    @classmethod
+    def generate_csv(cls, path):
+        """Generates CSV files from txt files at the given path.
+
+        It searches for the path for TXT files, generates a list and then
+        searches other files with the same names.
+
+            Media1.mov  \
+                         } it wil match these two files
+            Media1.json /
+
+        It accepts txt files in the following format.
+
+        title,description,category,keywords,country,poster_timecode,releases,
+        editorial
+
+        This is the GenericStock format.
+
+        It doesn't need to read the related media name because the filename
+
+        :param path: A path to a folder where the txt files resides.
+        :return:
+        """
+        raise NotImplementedError()
+
+    def discover_media(self, path):
+        """Discovers media in the given path.
+
+        What is a media? Should we use file extensions like ['*.mov', '*.mp4'
+
+        :param path:
+        :return:
+        """
+        raise NotImplementedError()
+
+
 class StockBase:
     """The base class for other stock classes
     """
@@ -24,15 +77,64 @@ class StockBase:
     csv_header = ''
     format = ''
 
+    def __init__(self, filename="", path="", title="", keywords=None):
+
+        if keywords is None:
+            keywords = []
+
+        self.filename = filename
+        self.path = path
+        self.title = title
+        self.keywords = keywords
+
     def to_csv(self):
         """abstract method
         """
         raise NotImplementedError()
 
-    def from_file(self):
-        """abstract method
+    def from_file(self, path):
+        """Extract metadata from the given JSON file
         """
-        raise NotImplementedError()
+        import json
+        with open(path) as f:
+            data = json.load(f)
+
+        self.title = data['title']
+        self.keywords = data['keywords']
+
+    def from_sidecar_file(self):
+        """Extracts metadata from the JSON file that resides right beside the
+        original file.
+        """
+        # read from the the sidecar file
+        # the sidecar file should be in the same path
+        # with the same file name but with json extension
+        self.from_file(self.sidecar_full_path)
+
+    def to_sidecar_file(self):
+        """dumps the data to sidecar file
+        """
+        import json
+
+        raw_data = {
+            'title': self.title,
+            'keywords': self.keywords
+        }
+        with open(self.sidecar_full_path, 'w') as f:
+            json.dump(raw_data, f, indent=2)
+
+    @property
+    def sidecar_filename(self):
+        """returns the sidecar filename based on the filename
+        """
+        import os
+        filename, ext = os.path.splitext(self.filename)
+        return '%s.json' % filename
+
+    @property
+    def sidecar_full_path(self):
+        import os
+        return os.path.join(self.path, self.sidecar_filename)
 
 
 class GenericStock(StockBase):
@@ -106,21 +208,19 @@ class GenericStock(StockBase):
 
     from_adobe_stock_categories = {}
 
-    def __init__(self, filename="", title="", description="", category1="",
-                 category2="", keywords=None, country="", poster_timecode="",
-                 releases=None, editorial=False):
-        if keywords is None:
-            keywords = []
+    def __init__(self, filename="", path="", title="", description="",
+                 category1="", category2="", keywords=None, country="",
+                 poster_timecode="", releases=None, editorial=False):
+        super(GenericStock, self).__init__(
+            filename=filename, path=path, title=title, keywords=keywords
+        )
 
         if releases is None:
             releases = []
 
-        self.filename = filename
-        self.title = title
         self.description = description
         self.category1 = category1
         self.category2 = category2
-        self.keywords = keywords
         self.country = country
         self.poster_timecode = poster_timecode
         self.releases = releases
@@ -227,18 +327,15 @@ class ShutterStock(StockBase):
     format = '{filename},"{title}","{keywords}","{category1},{category2}",' \
              '{editorial}'
 
-    def __init__(self, filename='', title='', category1='', category2='',
-                 editorial=False, keywords=None):
+    def __init__(self, filename='', path='', title='', category1='',
+                 category2='', editorial=False, keywords=None):
+        super(ShutterStock, self).__init__(
+            filename=filename, path=path, title=title, keywords=keywords
+        )
 
-        if keywords is None:
-            keywords = []
-
-        self.filename = filename
-        self.title = title
         self.category1 = category1
         self.category2 = category2
         self.editorial = editorial
-        self.keywords = keywords
 
     def to_csv(self):
         """converts the the data to CSV
@@ -296,18 +393,14 @@ class AdobeStock(StockBase):
         'Travel': 21
     }
 
-    def __init__(self, filename='', title='', category='', keywords=None,
-                 releases=None):
-
-        if keywords is None:
-            keywords = []
-
+    def __init__(self, filename='', path='', title='', category='',
+                 keywords=None, releases=None):
+        super(AdobeStock, self).__init__(
+            filename=filename, path=path, title=title, keywords=keywords
+        )
         if releases is None:
             releases = []
 
-        self.filename = filename
-        self.title = title
-        self.keywords = keywords
         self.category = category
         self.releases = releases
 
@@ -352,15 +445,13 @@ class GettyImages(StockBase):
     format = '{filename},"{description}",{country},"{title}","{keywords}",' \
              '{poster_timecode}'
 
-    def __init__(self, filename='', title='', description='', country='',
-                 keywords=None, poster_timecode='00:00:00:00'):
-        if keywords is None:
-            keywords = []
-        self.filename = filename
-        self.title = title
+    def __init__(self, filename='', path='', title='', description='',
+                 country='', keywords=None, poster_timecode='00:00:00:00'):
+        super(GettyImages, self).__init__(
+            filename=filename, path=path, title=title, keywords=keywords
+        )
         self.description = description
         self.country = country
-        self.keywords = keywords
         self.poster_timecode = poster_timecode
 
     def to_csv(self):
