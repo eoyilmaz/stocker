@@ -40,7 +40,7 @@ three major stock sites.
 Example:
 
 ```python
-from stocker.models import StockManager
+from stocker.models import StockManager, ShutterStock
 
 sm = StockManager()
 sm.discover_media("path")  # The path should point to a folder that has
@@ -53,7 +53,7 @@ for s in sm.media:
     print(sm.media.filename)
 
 # we can now generate a CSV file for ShutterStock with the metadata
-csv_content = sm.generate_csv(target='ShutterStock')
+csv_content = sm.generate_csv(ShutterStock)
 
 # and we can write the content to a file
 with open('path_to_csv_file.csv', 'w') as f:
@@ -66,10 +66,10 @@ to the server to enter the metadata information.
 And then we can generate one CSV file for AdobeStock:
 
 ```python
-from stocker.models import StockManager
+from stocker.models import StockManager, AdobeStock
 sm = StockManager()
 sm.discover_media("path") 
-adobe_csv_content = sm.generate_csv(target='AdobeStock')
+adobe_csv_content = sm.generate_csv(AdobeStock)
 with open('path_to_csv_file.csv', 'w') as f:
     f.write(adobe_csv_content)
 ```
