@@ -61,3 +61,73 @@ def test_init_with_arguments():
     assert gst.releases == kwargs['releases']
     assert gst.poster_timecode == kwargs['poster_timecode']
     assert gst.country == kwargs['country']
+
+
+def test_from_method():
+    """testing if the from_() method is working properly
+    """
+    raise NotImplementedError("Test is not implemented yet")
+
+
+def test_to_method():
+    """testing if the to() method is working properly
+    """
+    raise NotImplementedError("Test is not implemented yet")
+
+
+def test_from_shutter_stock_method():
+    """testing if the from_shutter_stock() method is working properly
+    """
+    raise NotImplementedError("Test is not implemented yet")
+
+
+def test_to_shutter_stock_method():
+    """testing if the to_shutter_stock() method is working properly
+    """
+    raise NotImplementedError("Test is not implemented yet")
+
+
+def test_from_abobe_stock_method():
+    """testing if the from_adobe_stock() method is working properly
+    """
+    raise NotImplementedError("Test is not implemented yet")
+
+
+def test_to_abobe_stock_method():
+    """testing if the to_adobe_stock() method is working properly
+    """
+    raise NotImplementedError("Test is not implemented yet")
+
+
+def test_from_getty_images_method():
+    """testing if the from_getty_images() method is working properly
+    """
+    raise NotImplementedError("Test is not implemented yet")
+
+
+def test_to_getty_images_method():
+    """testing if the from_to_images() method is working properly
+    """
+    raise NotImplementedError("Test is not implemented yet")
+
+
+def test_from_file_method():
+    """testing if the from_file method is working properly
+    """
+    import os
+    HERE = os.path.abspath(os.path.dirname(__file__))
+
+    test_data_path = os.path.join(HERE, 'test_data', 'some_video_1.json')
+
+    from stocker.models import GenericStock
+    gst = GenericStock()
+
+    gst.from_file(test_data_path)
+
+    assert gst.title == "Test video 1"
+    assert gst.description == "This is a test video, created just for test!"
+    assert gst.category1 == "Transportation"
+    assert gst.category2 == "Holidays"
+    assert gst.keywords == ["keyword 1", "keyword 2", "keyword 3"]
+    assert gst.filename == "some_video_1.mp4"
+    assert gst.path == os.path.join(HERE, 'test_data')

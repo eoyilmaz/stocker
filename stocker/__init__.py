@@ -17,3 +17,9 @@
 # along with Stocker.  If not, see <http://www.gnu.org/licenses/>
 
 
+__version__ = '0.1.0'
+__description__ = "Stock metadata management and conversion between ShutterStock, AdobeStock and GettyImages"
+__licence__ = 'LGPLv3'
+__uri__ = "https://github.com/eoyilmaz/stocker"
+__author__ = "Erkan Ozgur Yilmaz"
+__email__ = "eoyilmaz@gmail.com"

@@ -20,8 +20,13 @@
 class Status:
     """Stock status
     """
-
     statuses = ['Pending', 'Accepted', 'Rejected']
+
+
+class StockType:
+    """Stock type
+    """
+    types = ['Image', 'Video']
 
 
 class StockManager:
@@ -31,43 +36,50 @@ class StockManager:
     Does several things mostly related to file system.
     """
 
+    media_file_extension = {
+        'video': ['.mov', '.mp4'],
+        'image': ['.jpg', '.jpeg', '.png'],
+    }
+
     def __init__(self):
         self.media = []
 
-    @classmethod
-    def generate_csv(cls, path):
-        """Generates CSV files from txt files at the given path.
+    def generate_csv(self, target_class=None):
+        """Generates CSV content for the given target.
 
-        It searches for the path for TXT files, generates a list and then
-        searches other files with the same names.
+        ``target`` is one of "ShutterStock", "AdobeStock" or "GettyImages".
+        Default value is "ShutterStock".
 
-            Media1.mov  \
-                         } it wil match these two files
-            Media1.json /
-
-        It accepts txt files in the following format.
-
-        title,description,category,keywords,country,poster_timecode,releases,
-        editorial
-
-        This is the GenericStock format.
-
-        It doesn't need to read the related media name because the filename
-
-        :param path: A path to a folder where the txt files resides.
-        :return:
+        :param target_class: The target stock class one of "ShutterStock",
+          "AdobeStock" or "GettyImages". The default is ShutterStock
+        :return str: Returns the creates CSV content.
         """
-        raise NotImplementedError()
+        if target_class is None:
+            target_class = ShutterStock
+
+        csv_header = target_class.csv_header
+        converted_media = [m.to(target_class) for m in self.media]
+        csv_content = '\n'.join([m.to_csv() for m in converted_media])
+
+        return '%s\n%s' % (csv_header, csv_content)
 
     def discover_media(self, path):
         """Discovers media in the given path.
 
-        What is a media? Should we use file extensions like ['*.mov', '*.mp4'
+        Anything that has a .json sidecar file is considered as a media.
 
         :param path:
         :return:
         """
-        raise NotImplementedError()
+        import os
+        import glob
+        self.media = []
+        # get the json files
+        for file in glob.glob(os.path.join(path, '*.json')):
+            gst = GenericStock()
+            gst.from_file(file)
+            if gst.filename != '':
+                self.media.append(gst)
 
 
 class StockBase:
@@ -75,7 +87,8 @@ class StockBase:
     """
 
     csv_header = ''
-    format = ''
+    csv_format = ''
+    json_attrs = ['title', 'keywords']
 
     def __init__(self, filename="", path="", title="", keywords=None):
 
@@ -99,8 +112,21 @@ class StockBase:
         with open(path) as f:
             data = json.load(f)
 
-        self.title = data['title']
-        self.keywords = data['keywords']
+        for k in data:
+            self.__setattr__(k, data[k])
+
+        # get the filename from the json filename
+        import os
+        folder_path, filename = os.path.split(path)
+        basename, ext = os.path.splitext(filename)
+
+        import glob
+        files = glob.glob(os.path.join(folder_path, '%s.*' % basename))
+        if files:
+            for file in files:
+                if not file.endswith(('.json')):
+                    self.path, self.filename = os.path.split(file)
+                    break
 
     def from_sidecar_file(self):
         """Extracts metadata from the JSON file that resides right beside the
@@ -116,10 +142,10 @@ class StockBase:
         """
         import json
 
-        raw_data = {
-            'title': self.title,
-            'keywords': self.keywords
-        }
+        raw_data = {}
+        for k in self.json_attrs:
+            raw_data[k] = self.__getattribute__(k)
+
         with open(self.sidecar_full_path, 'w') as f:
             json.dump(raw_data, f, indent=2)
 
@@ -147,6 +173,10 @@ class GenericStock(StockBase):
 
     csv_header = 'filename,title,description,category,keywords,country,' \
                  'poster_timecode,releases,editorial'
+    json_attrs = [
+        'title', 'description', 'category1', 'category2', 'keywords',
+        'country', 'poster_timecode', 'releases', 'editorial'
+    ]
 
     categories = [
         'Abstract',
@@ -210,7 +240,7 @@ class GenericStock(StockBase):
 
     def __init__(self, filename="", path="", title="", description="",
                  category1="", category2="", keywords=None, country="",
-                 poster_timecode="", releases=None, editorial=False):
+                 poster_timecode="00:00:00", releases=None, editorial=False):
         super(GenericStock, self).__init__(
             filename=filename, path=path, title=title, keywords=keywords
         )
@@ -233,7 +263,11 @@ class GenericStock(StockBase):
 
     def from_(self, other_stock):
         """converts from other stock
+
+        :param other_stock: A GenericStock derivative
+        :return:
         """
+        # TODO: Please generalize this part
         if isinstance(other_stock, ShutterStock):
             self.from_shutter_stock(other_stock)
         elif isinstance(other_stock, AdobeStock):
@@ -241,9 +275,24 @@ class GenericStock(StockBase):
         elif isinstance(other_stock, GettyImages):
             self.from_getty_images(other_stock)
 
+    def to(self, other_stock):
+        """converts to other stock
+
+        :param other_stock:
+        :return:
+        """
+        # TODO: Please generalize this part
+        if other_stock == ShutterStock:
+            return self.to_shutter_stock()
+        elif other_stock == AdobeStock:
+            return self.to_adobe_stock()
+        elif other_stock == GettyImages:
+            return self.to_getty_images()
+
     def from_shutter_stock(self, shutter_stock):
         """reads data from ShutterStock
         """
+        # TODO: Please generalize this part
         self.filename = shutter_stock.filename
         self.title = shutter_stock.title
         self.category1 = shutter_stock.category1
@@ -254,6 +303,7 @@ class GenericStock(StockBase):
     def to_shutter_stock(self):
         """converts the data to ShutterStock
         """
+        # TODO: Please generalize this part
         return ShutterStock(
             filename=self.filename,
             title=self.title,
@@ -269,6 +319,7 @@ class GenericStock(StockBase):
         :param AdobeStock adobe_stock: AdobeStock instance
         :return:
         """
+        # TODO: Please generalize this part
         self.filename = adobe_stock.filename
         self.title = adobe_stock.title
         self.keywords = adobe_stock.keywords
@@ -278,6 +329,7 @@ class GenericStock(StockBase):
     def to_adobe_stock(self):
         """converts the data to AdobeStock CSV format
         """
+        # TODO: Please generalize this part
         return AdobeStock(
             filename=self.filename,
             title=self.title,
@@ -293,27 +345,25 @@ class GenericStock(StockBase):
         :param GettyImages getty_images: GettyImages instance
         :return:
         """
+        # TODO: Please generalize this part
         self.filename = getty_images.filename
         self.title = getty_images.title
         self.keywords = getty_images.keywords
 
     def to_getty_images(self):
-        """converts the data to GettyImages instancce
+        """converts the data to GettyImages instance
         """
+        # TODO: Please generalize this part
         return GettyImages(
             filename=self.filename,
             title=self.title,
-            description=self.title,
-            keywords=self.keywords
+            description=self.description,
+            keywords=self.keywords,
+            country=self.country
         )
 
     def to_csv(self):
         """converts data to CSV format
-        """
-        raise NotImplementedError()
-
-    def from_file(self):
-        """parses data from a file
         """
         raise NotImplementedError()
 
@@ -323,9 +373,11 @@ class ShutterStock(StockBase):
     """
 
     csv_header = 'filename,title,keywords,category,editorial'
-
-    format = '{filename},"{title}","{keywords}","{category1},{category2}",' \
-             '{editorial}'
+    csv_format = '{filename},"{title}","{keywords}","{category1},' \
+                 '{category2}",{editorial}'
+    json_attr_list = [
+        'title', 'category1', 'category2', 'keywords', 'editorial'
+    ]
 
     def __init__(self, filename='', path='', title='', category1='',
                  category2='', editorial=False, keywords=None):
@@ -340,7 +392,7 @@ class ShutterStock(StockBase):
     def to_csv(self):
         """converts the the data to CSV
         """
-        return self.format.format(
+        return self.csv_format.format(
             filename=self.filename,
             title=self.title,
             keywords=','.join(self.keywords),
@@ -356,18 +408,15 @@ class ShutterStock(StockBase):
         gst.from_(self)
         return gst.to_adobe_stock()
 
-    def from_file(self):
-        """reads data from file
-        """
-        raise NotImplementedError()
-
 
 class AdobeStock(StockBase):
     """Data structure for AdobeStock
     """
 
-    csv_header = 'filename,title,keywords,category,releases'
-    format = '{filename},{title},"{keywords}",{category},""'
+    csv_header = 'Filename,Title,Keywords,Category,Releases'
+    csv_format = '{filename},{title},"{keywords}",{category},""'
+
+    json_attr_list = ['title', 'category', 'keywords', 'releases']
 
     category_dict = {
         'Animals': 1,
@@ -429,11 +478,6 @@ class AdobeStock(StockBase):
         gst.from_(self)
         return gst.to_getty_images()
 
-    def from_file(self):
-        """reads from file
-        """
-        raise NotImplementedError()
-
 
 class GettyImages(StockBase):
     """Data structure for GettyImages
@@ -441,9 +485,11 @@ class GettyImages(StockBase):
 
     csv_header = 'file name,description,country,title,keywords,poster ' \
                  'timecode'
+    csv_format = '{filename},"{description}",{country},"{title}",' \
+                 '"{keywords}",{poster_timecode}'
 
-    format = '{filename},"{description}",{country},"{title}","{keywords}",' \
-             '{poster_timecode}'
+    json_attr_list = ['title', 'description', 'country', 'keywords',
+                      'poster_timecode']
 
     def __init__(self, filename='', path='', title='', description='',
                  country='', keywords=None, poster_timecode='00:00:00:00'):
@@ -457,7 +503,7 @@ class GettyImages(StockBase):
     def to_csv(self):
         """returns the data in CSV format
         """
-        return self.format.format(
+        return self.csv_format.format(
             filename=self.filename,
             description=self.description,
             country=self.country,
@@ -481,8 +527,3 @@ class GettyImages(StockBase):
         gst = GenericStock()
         gst.from_(self)
         return gst.to_shutter_stock()
-
-    def from_file(self):
-        """reads from file
-        """
-        raise NotImplementedError()

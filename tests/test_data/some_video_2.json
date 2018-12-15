@@ -1,0 +1,12 @@
+{
+  "title": "Test video 2",
+  "description": "This is a test video, created just for test!",
+  "category1": "Food and drink",
+  "category2": "Healthcare/Medical",
+  "keywords": [
+    "keyword 4",
+    "keyword 5",
+    "keyword 6"
+  ],
+  "country": "Turkey"
+}

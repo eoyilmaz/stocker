@@ -1,0 +1,12 @@
+{
+  "title": "Test video 1",
+  "description": "This is a test video, created just for test!",
+  "category1": "Transportation",
+  "category2": "Holidays",
+  "keywords": [
+    "keyword 1",
+    "keyword 2",
+    "keyword 3"
+  ],
+  "country": "Turkey"
+}
