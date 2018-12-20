@@ -359,7 +359,8 @@ class GenericStock(StockBase):
             title=self.title,
             description=self.description,
             keywords=self.keywords,
-            country=self.country
+            country=self.country,
+            poster_timecode=self.poster_timecode
         )
 
     def to_csv(self):
