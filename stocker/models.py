@@ -240,7 +240,7 @@ class GenericStock(StockBase):
 
     def __init__(self, filename="", path="", title="", description="",
                  category1="", category2="", keywords=None, country="",
-                 poster_timecode="00:00:00", releases=None, editorial=False):
+                 poster_timecode="00:00:05:00", releases=None, editorial=False):
         super(GenericStock, self).__init__(
             filename=filename, path=path, title=title, keywords=keywords
         )
@@ -493,11 +493,17 @@ class GettyImages(StockBase):
                       'poster_timecode']
 
     def __init__(self, filename='', path='', title='', description='',
-                 country='', keywords=None, poster_timecode='00:00:00:00'):
+                 country='', keywords=None, poster_timecode='00:00:05:00'):
         super(GettyImages, self).__init__(
             filename=filename, path=path, title=title, keywords=keywords
         )
-        self.description = description
+        if description:
+            self.description = description
+        elif title:
+            self.description = title
+        if not title:
+            self.title = self.description
+
         self.country = country
         self.poster_timecode = poster_timecode
 
