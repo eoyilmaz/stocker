@@ -63,6 +63,46 @@ def test_init_with_arguments():
     assert gst.country == kwargs['country']
 
 
+def test_init_title_with_description_attribute():
+    """testing initialization the title attribute with the description if it is
+    skipped
+    """
+    from stocker.models import GenericStock
+    # test data
+    kwargs = {
+        'filename': 'footage_filename.mov',
+        'description': 'Up to 200 characters,Most important keywords first. '
+                 'Max 50 keywords.',
+        'category1': 'Holidays',
+        'category2': 'Transportation',
+        'keywords': [
+            'background',
+            'bay',
+            'behind',
+            'blue',
+            'boat',
+            'city',
+            'cloud',
+        ],
+        'country': 'Turkey',
+        'editorial': False,
+        'releases': ['release1.pdf', 'release2.pdf'],
+        'poster_timecode': '00:00:00'
+    }
+
+    gst = GenericStock(**kwargs)
+    assert gst.filename == kwargs['filename']
+    assert gst.title == kwargs['description']
+    assert gst.description == kwargs['description']
+    assert gst.category1 == kwargs['category1']
+    assert gst.category2 == kwargs['category2']
+    assert gst.keywords == kwargs['keywords']
+    assert gst.editorial == kwargs['editorial']
+    assert gst.releases == kwargs['releases']
+    assert gst.poster_timecode == kwargs['poster_timecode']
+    assert gst.country == kwargs['country']
+
+
 def test_from_method():
     """testing if the from_() method is working properly
     """
@@ -115,9 +155,9 @@ def test_from_file_method():
     """testing if the from_file method is working properly
     """
     import os
-    HERE = os.path.abspath(os.path.dirname(__file__))
+    here = os.path.abspath(os.path.dirname(__file__))
 
-    test_data_path = os.path.join(HERE, 'test_data', 'some_video_1.json')
+    test_data_path = os.path.join(here, 'test_data', 'some_video_1.json')
 
     from stocker.models import GenericStock
     gst = GenericStock()
@@ -130,4 +170,4 @@ def test_from_file_method():
     assert gst.category2 == "Holidays"
     assert gst.keywords == ["keyword 1", "keyword 2", "keyword 3"]
     assert gst.filename == "some_video_1.mp4"
-    assert gst.path == os.path.join(HERE, 'test_data')
+    assert gst.path == os.path.join(here, 'test_data')

@@ -248,7 +248,15 @@ class GenericStock(StockBase):
         if releases is None:
             releases = []
 
-        self.description = description
+        self.description = None
+        if description:
+            self.description = description
+        elif title:
+            self.description = title
+
+        if not title:
+            self.title = self.description
+
         self.category1 = category1
         self.category2 = category2
         self.country = country
@@ -307,6 +315,7 @@ class GenericStock(StockBase):
         return ShutterStock(
             filename=self.filename,
             title=self.title,
+            description=self.description,
             keywords=self.keywords,
             category1=self.category1,
             category2=self.category2,
@@ -373,18 +382,27 @@ class ShutterStock(StockBase):
     """Data structure for ShutterStock
     """
 
-    csv_header = 'filename,title,keywords,category,editorial'
-    csv_format = '{filename},"{title}","{keywords}","{category1},' \
+    csv_header = 'filename,description,keywords,category,editorial'
+    csv_format = '{filename},"{description}","{keywords}","{category1},' \
                  '{category2}",{editorial}'
     json_attr_list = [
         'title', 'category1', 'category2', 'keywords', 'editorial'
     ]
 
-    def __init__(self, filename='', path='', title='', category1='',
-                 category2='', editorial=False, keywords=None):
+    def __init__(self, filename='', path='', title='', description='',
+                 category1='', category2='', editorial=False, keywords=None):
         super(ShutterStock, self).__init__(
             filename=filename, path=path, title=title, keywords=keywords
         )
+
+        self.description = None
+        if description:
+            self.description = description
+        elif title:
+            self.description = title
+
+        if not title:
+            self.title = self.description
 
         self.category1 = category1
         self.category2 = category2
@@ -396,6 +414,7 @@ class ShutterStock(StockBase):
         return self.csv_format.format(
             filename=self.filename,
             title=self.title,
+            description=self.description,
             keywords=','.join(self.keywords),
             category1=self.category1,
             category2=self.category2,
@@ -497,6 +516,7 @@ class GettyImages(StockBase):
         super(GettyImages, self).__init__(
             filename=filename, path=path, title=title, keywords=keywords
         )
+        self.description = None
         if description:
             self.description = description
         elif title:

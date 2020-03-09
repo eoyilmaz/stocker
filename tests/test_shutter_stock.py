@@ -35,6 +35,7 @@ def test_data_structure():
     filename = 'footage_filename.mov'
     title = 'Up to 200 characters,Most important keywords first. ' \
             'Max 50 keywords.'
+    description = 'this is the description'
     category1 = 'Holidays'
     category2 = 'Transportation'
     keywords = [
@@ -49,12 +50,14 @@ def test_data_structure():
 
     sst.filename = filename
     sst.title = title
+    sst.description = description
     sst.category1 = category1
     sst.category2 = category2
     sst.keywords = keywords
 
     assert sst.filename == filename
     assert sst.title == title
+    assert sst.description == description
     assert sst.category1 == category1
     assert sst.category2 == category2
     assert sst.keywords == keywords
@@ -70,6 +73,7 @@ def test_initialization_with_keywords():
         'filename': 'footage_filename.mov',
         'title': 'Up to 200 characters,Most important keywords first. '
                  'Max 50 keywords.',
+        'description': 'this is the description',
         'category1': 'Holidays',
         'category2': 'Transportation',
         'keywords': [
@@ -87,6 +91,77 @@ def test_initialization_with_keywords():
 
     assert sst.filename == kwargs['filename']
     assert sst.title == kwargs['title']
+    assert sst.description == kwargs['description']
+    assert sst.category1 == kwargs['category1']
+    assert sst.category2 == kwargs['category2']
+    assert sst.keywords == kwargs['keywords']
+    assert sst.editorial == kwargs['editorial']
+
+
+def test_initialization_title_with_description():
+    """test initialization of the title attribute with the description
+    attribute if it is skipped or None
+    """
+    from stocker.models import ShutterStock
+
+    # test data
+    kwargs = {
+        'filename': 'footage_filename.mov',
+        'description': 'Up to 200 characters,Most important keywords first. '
+                       'Max 50 keywords.',
+        'category1': 'Holidays',
+        'category2': 'Transportation',
+        'keywords': [
+            'background',
+            'bay',
+            'behind',
+            'blue',
+            'boat',
+            'city',
+            'cloud',
+        ],
+        'editorial': False
+    }
+    sst = ShutterStock(**kwargs)
+
+    assert sst.filename == kwargs['filename']
+    assert sst.title == kwargs['description']
+    assert sst.description == kwargs['description']
+    assert sst.category1 == kwargs['category1']
+    assert sst.category2 == kwargs['category2']
+    assert sst.keywords == kwargs['keywords']
+    assert sst.editorial == kwargs['editorial']
+
+
+def test_initialization_description_with_title():
+    """test initialization of the description attribute with the title
+    attribute if it is skipped or None
+    """
+    from stocker.models import ShutterStock
+
+    # test data
+    kwargs = {
+        'filename': 'footage_filename.mov',
+        'title': 'Up to 200 characters,Most important keywords first. '
+                       'Max 50 keywords.',
+        'category1': 'Holidays',
+        'category2': 'Transportation',
+        'keywords': [
+            'background',
+            'bay',
+            'behind',
+            'blue',
+            'boat',
+            'city',
+            'cloud',
+        ],
+        'editorial': False
+    }
+    sst = ShutterStock(**kwargs)
+
+    assert sst.filename == kwargs['filename']
+    assert sst.title == kwargs['title']
+    assert sst.description == kwargs['title']
     assert sst.category1 == kwargs['category1']
     assert sst.category2 == kwargs['category2']
     assert sst.keywords == kwargs['keywords']
