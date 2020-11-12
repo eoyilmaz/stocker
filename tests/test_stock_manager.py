@@ -71,7 +71,7 @@ def test_generate_csv_method_with_target_is_shutter_stock():
 
     csv_content = sm.generate_csv(target_class=ShutterStock)
 
-    assert csv_content == """filename,description,keywords,category,editorial
+    assert csv_content == """filename,description,keywords,categories,editorial
 some_video_1.mp4,"This is a test video, created just for test!","keyword 1,keyword 2,keyword 3","Transportation,Holidays",no
 some_video_2.mp4,"This is a test video, created just for test!","keyword 4,keyword 5,keyword 6","Food and drink,Healthcare/Medical",no
 some_video_3.mp4,"This is a test video, created just for test!","keyword 5,keyword 6,keyword 7","Food and drink,Healthcare/Medical",no"""

@@ -109,8 +109,12 @@ class StockBase:
         """Extract metadata from the given JSON file
         """
         import json
-        with open(path) as f:
-            data = json.load(f)
+        try:
+            with open(path) as f:
+                data = json.load(f)
+        except json.JSONDecodeError as e:
+            print(path)
+            raise e
 
         for k in data:
             self.__setattr__(k, data[k])
@@ -124,7 +128,7 @@ class StockBase:
         files = glob.glob(os.path.join(folder_path, '%s.*' % basename))
         if files:
             for file in files:
-                if not file.endswith(('.json')):
+                if not file.endswith('.json'):
                     self.path, self.filename = os.path.split(file)
                     break
 
@@ -382,7 +386,7 @@ class ShutterStock(StockBase):
     """Data structure for ShutterStock
     """
 
-    csv_header = 'filename,description,keywords,category,editorial'
+    csv_header = 'filename,description,keywords,categories,editorial'
     csv_format = '{filename},"{description}","{keywords}","{category1},' \
                  '{category2}",{editorial}'
     json_attr_list = [
